@@ -3,14 +3,18 @@
 
 using namespace std;
 
+int player_score = 0;
+int computer_score = 0;
+
 class Ball {
 public:
     float x, y;
     int speed_x, speed_y;
     int radius;
+    Color color = WHITE;
 
     void Draw() {
-        DrawCircle(x, y, radius, WHITE);
+        DrawCircle(x, y, radius, color);
     }
 
     void Update() {
@@ -23,10 +27,34 @@ public:
         if (x + radius >= GetScreenWidth() || x - radius <= 0) {
             speed_x *= -1;
         }
+        if (x + radius >= GetScreenWidth()) {
+            computer_score++;
+            ResetBall();
+        } else if (x - radius <= 0) {
+            player_score++;
+            ResetBall();
+        }
+    }
+
+    void ResetBall() {
+        x = GetScreenWidth() / 2;
+        y = GetScreenHeight() / 2;
+
+        int speed_choices[2] = {-1, 1};
+        speed_x *= speed_choices[GetRandomValue(0, 1)];
+        speed_y *= speed_choices[GetRandomValue(0, 1)];
     }
 };
 
 class Paddle {
+protected:
+    void LimitMovement() {
+        if (y <= 0) y = 0;
+        if (y + height >= GetScreenHeight()) {
+            y = GetScreenHeight() - height;
+        }
+    }
+
 public:
     float x, y;
     float width, height;
@@ -45,10 +73,7 @@ public:
             y = y + speed;
         }
 
-        if (y <= 0) y = 0;
-        if (y + height >= GetScreenHeight()) {
-            y = GetScreenHeight() - height;
-        }
+        LimitMovement();
     }
 };
 
@@ -61,10 +86,7 @@ public:
             y -= speed;
         }
 
-        if (y <= 0) y = 0;
-        if (y + height >= GetScreenHeight()) {
-            y = GetScreenHeight() - height;
-        }
+        LimitMovement();
     }
 };
 
@@ -77,7 +99,7 @@ int main () {
 
     const int screen_width = 1280;
     const int screen_height = 800;
-    InitWindow(screen_width, screen_height, "My Pong Game!");
+    InitWindow(screen_width, screen_height, "Pong!");
     SetTargetFPS(60);
 
     ball.radius = 20;
@@ -108,6 +130,24 @@ int main () {
         player.Update();
         computer.Update(ball.y);
 
+        // check collisions
+        if (CheckCollisionCircleRec(
+            Vector2{ball.x, ball.y},
+            ball.radius,
+            Rectangle{player.x, player.y, player.width, player.height}
+            )) {
+            ball.speed_x *= -1;
+            ball.color = player.color;
+        }
+        if (CheckCollisionCircleRec(
+            Vector2{ball.x, ball.y},
+            ball.radius,
+            Rectangle{computer.x, computer.y, computer.width, computer.height}
+            )) {
+            ball.speed_x *= -1;
+            ball.color = computer.color;
+        }
+
         // drawing
         // center ball in screen
         ClearBackground(BLACK);
@@ -115,6 +155,8 @@ int main () {
         ball.Draw();
         player.Draw();
         computer.Draw();
+        DrawText(TextFormat("%i", computer_score), screen_width / 4 - 20, 20, 80, WHITE);
+        DrawText(TextFormat("%i", player_score), screen_width * .75 + 20, 20, 80, WHITE);
         EndDrawing();
     }
 
