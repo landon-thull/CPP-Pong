@@ -3,6 +3,11 @@
 
 using namespace std;
 
+Color Green = Color{38, 185, 154, 255};
+Color DarkGreen = Color{20, 160, 133, 255};
+Color LightGreen = Color{129, 204, 184, 255};
+Color Yellow = Color{243, 213, 154, 255};
+
 int player_score = 0;
 int computer_score = 0;
 
@@ -62,7 +67,7 @@ public:
     Color color = WHITE;
 
     void Draw() {
-        DrawRectangle(x, y, width, height, color);
+        DrawRectangleRounded(Rectangle{x, y, width, height}, 0.8, 0, color);
     }
 
     void Update() {
@@ -107,6 +112,7 @@ int main () {
     ball.y = screen_height / 2;
     ball.speed_x = 7;
     ball.speed_y = 7;
+    ball.color = Yellow;
 
     player.width = 25;
     player.height = 120;
@@ -137,7 +143,6 @@ int main () {
             Rectangle{player.x, player.y, player.width, player.height}
             )) {
             ball.speed_x *= -1;
-            ball.color = player.color;
         }
         if (CheckCollisionCircleRec(
             Vector2{ball.x, ball.y},
@@ -145,12 +150,13 @@ int main () {
             Rectangle{computer.x, computer.y, computer.width, computer.height}
             )) {
             ball.speed_x *= -1;
-            ball.color = computer.color;
         }
 
         // drawing
         // center ball in screen
-        ClearBackground(BLACK);
+        ClearBackground(DarkGreen);
+        DrawRectangle(screen_width / 2, 0, screen_width / 2, screen_height, Green);
+        DrawCircle(screen_width / 2, screen_height / 2, 150, LightGreen);
         DrawLine(screen_width / 2, 0, screen_width / 2, screen_height, WHITE);
         ball.Draw();
         player.Draw();
